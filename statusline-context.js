@@ -42,34 +42,37 @@ function terminalColumns() {
   return Math.trunc(asFloat(process.env.COLUMNS, 120));
 }
 
-// Smooth color gradient keyed on absolute tokens used (window-size
-// independent), driven purely by the red/green channels (blue stays 0):
-//   0 -> 150k:  red ramps up while green stays maxed  (green -> yellow)
-//   150k -> 200k: green drops while red stays maxed    (yellow -> red)
-//   > 200k:     clamped at pure red
+// Smooth color gradient keyed on percentage of the context window used, so the
+// color always agrees with the `ctx N%` reading beside it and scales to
+// whatever window the session has (200k, 1M, ...). Driven purely by the
+// red/green channels (blue stays 0):
+//   0 -> 50%:   red ramps up while green stays maxed  (green -> yellow)
+//   50% -> 80%: green drops while red stays maxed     (yellow -> red)
+//   > 80%:      clamped at pure red
 // Emitted as 24-bit truecolor; needs a terminal that supports it (most modern
-// ones do). On a 1M window the 150k / 200k landmarks are 15% / 20%.
+// ones do). On a 200k window the 50 / 80 stops are 100k / 160k tokens; on a 1M
+// window, 500k / 800k.
 const RESET = "\x1b[0m";
 const GRADIENT = [
   [0, [0, 255, 0]], // bright green
-  [150_000, [255, 255, 0]], // yellow
-  [200_000, [255, 0, 0]], // pure red
+  [50, [255, 255, 0]], // yellow
+  [80, [255, 0, 0]], // pure red
 ];
 
 function lerp(a, b, t) {
   return Math.round(a + (b - a) * t);
 }
 
-function colorFor(usedTokens) {
+function colorFor(usedPercentage) {
   let [r, g, b] = GRADIENT[GRADIENT.length - 1][1];
-  if (usedTokens <= GRADIENT[0][0]) {
+  if (usedPercentage <= GRADIENT[0][0]) {
     [r, g, b] = GRADIENT[0][1];
   } else {
     for (let i = 0; i < GRADIENT.length - 1; i++) {
       const [t0, c0] = GRADIENT[i];
       const [t1, c1] = GRADIENT[i + 1];
-      if (usedTokens >= t0 && usedTokens <= t1) {
-        const t = (usedTokens - t0) / (t1 - t0);
+      if (usedPercentage >= t0 && usedPercentage <= t1) {
+        const t = (usedPercentage - t0) / (t1 - t0);
         r = lerp(c0[0], c1[0], t);
         g = lerp(c0[1], c1[1], t);
         b = lerp(c0[2], c1[2], t);
@@ -167,7 +170,7 @@ function main() {
     line = line.slice(0, Math.max(0, columns - 1)) + "~";
   }
 
-  process.stdout.write(colorize(line, colorFor(usedTokens)) + "\n");
+  process.stdout.write(colorize(line, colorFor(usedPercentage)) + "\n");
   return 0;
 }
 

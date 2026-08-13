@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="620" height="184" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" font-size="14">
   <rect width="620" height="184" rx="10" fill="#0d1117"/>
-  <text x="20" y="36" fill="#55ff00" xml:space="preserve">Opus 4.8 | &lt;current folder&gt; | ctx 5% [&#9608;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;] 50k/1M</text>
-  <text x="20" y="62" fill="#aaff00" xml:space="preserve">Opus 4.8 | &lt;current folder&gt; | ctx 10% [&#9608;&#9608;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;] 100k/1M</text>
-  <text x="20" y="88" fill="#ffff00" xml:space="preserve">Opus 4.8 | &lt;current folder&gt; | ctx 15% [&#9608;&#9608;&#9608;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;] 150k/1M</text>
-  <text x="20" y="114" fill="#ff8000" xml:space="preserve">Opus 4.8 | &lt;current folder&gt; | ctx 18% [&#9608;&#9608;&#9608;&#9608;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;] 175k/1M</text>
-  <text x="20" y="140" fill="#ff0000" xml:space="preserve">Opus 4.8 | &lt;current folder&gt; | ctx 20% [&#9608;&#9608;&#9608;&#9608;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;] 200k/1M</text>
-  <text x="20" y="166" fill="#ff0000" xml:space="preserve">Opus 4.8 | &lt;current folder&gt; | ctx 30% [&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;] 300k/1M</text>
+  <text x="20" y="36" fill="#1aff00" xml:space="preserve">Opus 4.8 | &lt;current folder&gt; | ctx 5% [█░░░░░░░░░░░░░░░░░░░] 50k/1M</text>
+  <text x="20" y="62" fill="#80ff00" xml:space="preserve">Opus 4.8 | &lt;current folder&gt; | ctx 25% [█████░░░░░░░░░░░░░░░] 250k/1M</text>
+  <text x="20" y="88" fill="#ffff00" xml:space="preserve">Opus 4.8 | &lt;current folder&gt; | ctx 50% [██████████░░░░░░░░░░] 500k/1M</text>
+  <text x="20" y="114" fill="#ff8000" xml:space="preserve">Opus 4.8 | &lt;current folder&gt; | ctx 65% [█████████████░░░░░░░] 650k/1M</text>
+  <text x="20" y="140" fill="#ff0000" xml:space="preserve">Opus 4.8 | &lt;current folder&gt; | ctx 80% [████████████████░░░░] 800k/1M</text>
+  <text x="20" y="166" fill="#ff0000" xml:space="preserve">Opus 4.8 | &lt;current folder&gt; | ctx 95% [███████████████████░] 950k/1M</text>
 </svg>
