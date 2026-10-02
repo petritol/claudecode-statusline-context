@@ -24,11 +24,12 @@ The band draws in the terminal and in the desktop app's Code tab.
 
 ## Installation
 
-Install it as a plugin from this repository:
+Install it from the [petritol](https://github.com/petritol/claude-plugins)
+plugin marketplace:
 
 ```
-/plugin marketplace add petritol/claudecode-statusline-context
-/plugin install context-statusline@claudecode-statusline-context
+/plugin marketplace add petritol/claude-plugins
+/plugin install context-statusline@petritol
 ```
 
 The band appears above the prompt and updates after each turn.
@@ -80,12 +81,13 @@ whatever window the session has. The default is `200k`.
   separators (`200,000`), scientific notation (`2e5`), a leading dot (`.5M`)
   or extra words (`200k tokens`).
 
-Set it in `/config`, or in `~/.claude/settings.json` as a quoted string:
+Set it in `/config`, with `/plugin configure context-statusline@petritol`, or
+in `~/.claude/settings.json` as a quoted string:
 
 ```json
 {
   "pluginConfigs": {
-    "context-statusline@claudecode-statusline-context": {
+    "context-statusline@petritol": {
       "options": { "contextBudget": "80%" }
     }
   }
