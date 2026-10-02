@@ -11,6 +11,7 @@ const RED: Rgb = [255, 0, 0]
 
 const DEFAULT_CONTEXT_BUDGET = '200k'
 const YELLOW_SHARE = 0.75
+const TRACK_BRIGHTNESS = 0.4
 
 const UNITS: Record<string, number> = { '': 1, k: 1_000, m: 1_000_000 }
 
@@ -39,12 +40,11 @@ function clampText(value: string, limit: number): string {
   return `${value.slice(0, limit - 1)}~`
 }
 
-function bar(percentage: number, width: number): string {
-  const filled = Math.round((Math.max(0, Math.min(100, percentage)) * width) / 100)
-  return `[${'█'.repeat(filled)}${'░'.repeat(width - filled)}]`
+function toHex(rgb: Rgb): string {
+  return `#${rgb.map(c => c.toString(16).padStart(2, '0')).join('')}`
 }
 
-export function colorFor(usedTokens: number, budget: number): string {
+function gradientAt(usedTokens: number, budget: number): Rgb {
   const gradient: [number, Rgb][] = [
     [0, GREEN],
     [budget * YELLOW_SHARE, YELLOW],
@@ -60,7 +60,15 @@ export function colorFor(usedTokens: number, budget: number): string {
       break
     }
   }
-  return `#${rgb.map(c => c.toString(16).padStart(2, '0')).join('')}`
+  return rgb
+}
+
+export function colorFor(usedTokens: number, budget: number): string {
+  return toHex(gradientAt(usedTokens, budget))
+}
+
+export function trackColorFor(usedTokens: number, budget: number): string {
+  return toHex(gradientAt(usedTokens, budget).map(c => Math.round(c * TRACK_BRIGHTNESS)) as Rgb)
 }
 
 export function modelDisplayName(id: string): string {
@@ -71,27 +79,57 @@ export function modelDisplayName(id: string): string {
   return longContext ? `${name} (1M context)` : name
 }
 
+export type BarCell = { glyph: string; color: string }
+
+export type StatusLine = { head: string; bar: BarCell[]; tail: string }
+
+export function barCells(args: {
+  percent: number
+  width: number
+  tokens: number
+  window: number
+  budget: number
+}): BarCell[] {
+  const { percent, width, tokens, window, budget } = args
+  const fill = colorFor(tokens, budget)
+  const filled = Math.round((Math.max(0, Math.min(100, percent)) * width) / 100)
+  const marker = budget < window ? Math.floor((budget / window) * width) : -1
+
+  return Array.from({ length: width }, (_, i) => {
+    const isFilled = i < filled
+    if (i === marker) return { glyph: isFilled ? '┃' : '│', color: fill }
+    if (isFilled) return { glyph: '█', color: fill }
+    return { glyph: '░', color: trackColorFor(((i + 0.5) / width) * window, budget) }
+  })
+}
+
+export function lineText({ head, bar, tail }: StatusLine): string {
+  return head + bar.map(cell => cell.glyph).join('') + tail
+}
+
 export function statusLine(args: {
   model: string
   project: string
   tokens: number
   window: number
   percent: number
+  budget: number
   columns: number
-}): string {
-  const { model, project, tokens, window, percent, columns } = args
+}): StatusLine {
+  const { model, project, tokens, window, percent, budget, columns } = args
   const barWidth = columns >= 100 ? 20 : columns >= 72 ? 12 : 0
+  const bar = barWidth ? barCells({ percent, width: barWidth, tokens, window, budget }) : []
 
-  const parts = [`ctx ${percent.toFixed(0)}%`]
-  if (barWidth) parts.push(bar(percent, barWidth))
-  if (window) parts.push(`${formatTokens(tokens)}/${formatTokens(window)}`)
-  if (tokens > 200_000) parts.push('200k+')
+  const usage = `ctx ${percent.toFixed(0)}%${bar.length ? ' [' : ''}`
+  const tail = `${bar.length ? ']' : ''}${window ? ` ${formatTokens(tokens)}/${formatTokens(window)}` : ''}`
 
-  const status = parts.join(' ')
-  let line = [clampText(model, 18), clampText(project, 24), status].filter(Boolean).join(' | ')
-  if (line.length > columns) line = [clampText(model, 12), status].filter(Boolean).join(' | ')
-  if (line.length > columns) line = `${line.slice(0, Math.max(0, columns - 1))}~`
-  return line
+  const withPrefix = (...prefix: string[]) => [...prefix.filter(Boolean), usage].join(' | ')
+  let head = withPrefix(clampText(model, 18), clampText(project, 24))
+  if (head.length + bar.length + tail.length > columns) head = withPrefix(clampText(model, 12))
+
+  const line = { head, bar, tail }
+  if (bar.length || lineText(line).length <= columns) return line
+  return { head: `${lineText(line).slice(0, Math.max(0, columns - 1))}~`, bar, tail: '' }
 }
 
 export const register: Register = (on, options) => {
@@ -112,19 +150,27 @@ export const register: Register = (on, options) => {
       $.session.root(),
     ])
     const tokens = context.tokens ?? 0
-    const line = statusLine({
+    const budget = budgetTokens(contextBudget, context.window)
+    const { head, bar, tail } = statusLine({
       model: modelDisplayName(model),
       project: root.split(/[\\/]/).filter(Boolean).pop() ?? '',
       tokens,
       window: context.window,
       percent: Math.max(0, Math.min(100, context.percent ?? 0)),
+      budget,
       columns: e.props.bodyColumns,
     })
 
     const { Text } = $.ui.resolve(e)
     return (
-      <Text color={colorFor(tokens, budgetTokens(contextBudget, context.window))} wrap="truncate">
-        {line}
+      <Text color={colorFor(tokens, budget)} backgroundColor="#000000" wrap="truncate">
+        {head}
+        {bar.map(cell => (
+          <Text color={cell.color}>
+            {cell.glyph}
+          </Text>
+        ))}
+        {tail}
       </Text>
     )
   })

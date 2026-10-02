@@ -7,9 +7,12 @@ A [Claude Code mod](https://claude.com/blog/claude-code-mods) that shows
 progress bar, and a `used / total` token count — in a band just above the
 prompt.
 
-The color runs green → yellow → red as the context fills — fully red at
-200k tokens by default, or at a point you [configure](#configuration). The
-bar and project name drop out as the terminal narrows.
+The color runs green → yellow → red as the context fills — fully red at 200k
+tokens by default, or at a point you [configure](#configuration). The bar's
+empty cells preview that gradient in a darker shade, and a `│` in the current
+color marks where the budget is reached (`┃` once the fill has passed it).
+The line is drawn on a black background so the colors read on light themes
+too. The bar and project name drop out as the terminal narrows.
 
 ## Requirements
 
