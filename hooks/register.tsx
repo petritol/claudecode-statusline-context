@@ -5,11 +5,26 @@ const measured = atom({ plugin: 'context-statusline', key: 'measured' } as const
 
 type Rgb = [number, number, number]
 
-const GRADIENT: [number, Rgb][] = [
-  [0, [0, 255, 0]],
-  [150_000, [255, 255, 0]],
-  [200_000, [255, 0, 0]],
-]
+const GREEN: Rgb = [0, 255, 0]
+const YELLOW: Rgb = [255, 255, 0]
+const RED: Rgb = [255, 0, 0]
+
+const DEFAULT_CONTEXT_BUDGET = '200k'
+const YELLOW_SHARE = 0.75
+
+const UNITS: Record<string, number> = { '': 1, k: 1_000, m: 1_000_000 }
+
+function parseThreshold(value: string, window: number): number | undefined {
+  const match = /^\s*(\d+(?:\.\d+)?)\s*(k|m|%)?\s*$/i.exec(value)
+  if (!match) return undefined
+  const amount = Number(match[1])
+  const unit = (match[2] ?? '').toLowerCase()
+  return unit === '%' ? (amount / 100) * window : amount * UNITS[unit]!
+}
+
+export function budgetTokens(contextBudget: string, window: number): number {
+  return parseThreshold(contextBudget, window) || parseThreshold(DEFAULT_CONTEXT_BUDGET, window)!
+}
 
 export function formatTokens(tokens: number): string {
   if (tokens >= 1_000_000) return `${(tokens / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`
@@ -29,11 +44,16 @@ function bar(percentage: number, width: number): string {
   return `[${'█'.repeat(filled)}${'░'.repeat(width - filled)}]`
 }
 
-export function colorFor(usedTokens: number): string {
-  let rgb = GRADIENT[GRADIENT.length - 1]![1]
-  for (let i = 0; i < GRADIENT.length - 1; i++) {
-    const [t0, c0] = GRADIENT[i]!
-    const [t1, c1] = GRADIENT[i + 1]!
+export function colorFor(usedTokens: number, budget: number): string {
+  const gradient: [number, Rgb][] = [
+    [0, GREEN],
+    [budget * YELLOW_SHARE, YELLOW],
+    [budget, RED],
+  ]
+  let rgb = RED
+  for (let i = 0; i < gradient.length - 1; i++) {
+    const [t0, c0] = gradient[i]!
+    const [t1, c1] = gradient[i + 1]!
     if (usedTokens <= t1) {
       const t = Math.max(0, (usedTokens - t0) / (t1 - t0))
       rgb = c0.map((c, j) => Math.round(c + (c1[j]! - c) * t)) as Rgb
@@ -74,7 +94,9 @@ export function statusLine(args: {
   return line
 }
 
-export const register: Register = on => {
+export const register: Register = (on, options) => {
+  const contextBudget = String(options.contextBudget ?? DEFAULT_CONTEXT_BUDGET)
+
   on('session.measure', async ($, e, next) => {
     if (e.changed.includes('context')) await update($, measured, n => n + 1)
     return next(e)
@@ -101,7 +123,7 @@ export const register: Register = on => {
 
     const { Text } = $.ui.resolve(e)
     return (
-      <Text color={colorFor(tokens)} wrap="truncate">
+      <Text color={colorFor(tokens, budgetTokens(contextBudget, context.window))} wrap="truncate">
         {line}
       </Text>
     )

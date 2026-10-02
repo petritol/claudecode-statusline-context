@@ -7,9 +7,9 @@ A [Claude Code mod](https://claude.com/blog/claude-code-mods) that shows
 progress bar, and a `used / total` token count — in a band just above the
 prompt.
 
-The color runs green → yellow → red on absolute tokens used (yellow at 150k,
-red at 200k), independent of the window size. The bar and project name drop
-out as the terminal narrows.
+The color runs green → yellow → red as the context fills — fully red at
+200k tokens by default, or at a point you [configure](#configuration). The
+bar and project name drop out as the terminal narrows.
 
 ## Requirements
 
@@ -53,6 +53,41 @@ block of `~/.claude/settings.json`:
 Earlier versions were a `statusLine` command script. Remove the `statusLine`
 block from `~/.claude/settings.json` and delete
 `~/.claude/statusline-context.js`, or the usage shows twice.
+
+## Configuration
+
+`contextBudget` sets the usage at which the color turns fully red; it passes
+yellow at three quarters of that point. Give it a token count to keep the
+gradient on fixed numbers, or a share of the context window to scale it with
+whatever window the session has. The default is `200k`.
+
+| Format       | Example          | Means                                      |
+| ------------ | ---------------- | ------------------------------------------ |
+| Plain number | `120000`         | 120,000 tokens                             |
+| `k` suffix   | `200k`, `150.5k` | thousands of tokens                        |
+| `M` suffix   | `1M`, `1.5M`     | millions of tokens                         |
+| `%` suffix   | `80%`, `62.5%`   | that share of the session's context window |
+
+- Decimals are allowed, `k` and `M` work in either case, and spaces around
+  the value or before the unit are ignored.
+- A percentage follows the session's window: `80%` is 160k on a 200k window
+  and 800k on a 1M one. Values above `100%` are accepted, but the color then
+  never reaches full red.
+- Anything else falls back to `200k`: zero, negative numbers, thousands
+  separators (`200,000`), scientific notation (`2e5`), a leading dot (`.5M`)
+  or extra words (`200k tokens`).
+
+Set it in `/config`, or in `~/.claude/settings.json` as a quoted string:
+
+```json
+{
+  "pluginConfigs": {
+    "context-statusline@claudecode-statusline-context": {
+      "options": { "contextBudget": "80%" }
+    }
+  }
+}
+```
 
 ## Development
 

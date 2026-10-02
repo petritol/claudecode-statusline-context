@@ -1,7 +1,17 @@
 {
   "name": "context-statusline",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Colorized context-window usage band: model | project | ctx % [bar] used/total",
-  "author": { "name": "Petri Tolonen" },
-  "types": "./types/index.d.ts"
+  "author": {
+    "name": "Petri Tolonen"
+  },
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "contextBudget": {
+      "type": "string",
+      "title": "Context budget",
+      "description": "Turns fully red at this usage: tokens (200k) or % of window (80%)",
+      "default": "200k"
+    }
+  }
 }
