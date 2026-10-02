@@ -1,6 +1,6 @@
 # context-statusline
 
-![Sample status line states](docs/states.svg)
+![Sample states with contextBudget set to 75%](docs/states.svg)
 
 A [Claude Code mod](https://claude.com/blog/claude-code-mods) that shows
 **context-window usage** at a glance — a colorized percentage, a Unicode
