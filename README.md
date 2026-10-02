@@ -2,58 +2,64 @@
 
 ![Sample status line states](docs/states.svg)
 
-A custom [Claude Code](https://claude.com/claude-code) status line that shows
+A [Claude Code mod](https://claude.com/blog/claude-code-mods) that shows
 **context-window usage** at a glance — a colorized percentage, a Unicode
-progress bar, and a `used / total` token count.
+progress bar, and a `used / total` token count — in a band just above the
+prompt.
+
+The color runs green → yellow → red on absolute tokens used (yellow at 150k,
+red at 200k), independent of the window size. The bar and project name drop
+out as the terminal narrows.
 
 ## Requirements
 
-- **Claude Code v2.1.153 or later** — provides the
-  [status line](https://code.claude.com/docs/en/statusline) feature along with
-  the current-context token counts and terminal-width info this script relies
-  on. (Earlier versions reported cumulative session tokens and didn't expose
-  terminal width.)
-- **Node.js** — no extra install needed: Node ships with Claude Code, so if you
-  can run Claude Code you can run this. Works on macOS, Linux, and Windows.
+- **Claude Code with mod support** (function-hook plugins). Tested on v2.1.287.
 - A **UTF-8 terminal** (for the `█` / `░` bar glyphs) with **truecolor** support
   for the gradient (virtually all modern terminals qualify).
 
-The script is a single file with zero third-party dependencies.
+The band draws in the terminal and in the desktop app's Code tab.
 
 ## Installation
 
-1. **Copy the script** somewhere stable. The conventional spot is your Claude
-   config directory:
+Install it as a plugin from this repository:
 
-   ```sh
-   cp statusline-context.js ~/.claude/statusline-context.js
-   chmod +x ~/.claude/statusline-context.js
-   ```
+```
+/plugin marketplace add petritol/claudecode-statusline-context
+/plugin install context-statusline@claudecode-statusline-context
+```
 
-2. **Register it** in your Claude Code settings. Edit `~/.claude/settings.json`
-   (create it if it doesn't exist) and add a `statusLine` block pointing at the
-   **absolute path** from step 1:
+The band appears above the prompt and updates after each turn.
 
-   ```json
-   {
-     "statusLine": {
-       "type": "command",
-       "command": "/home/you/.claude/statusline-context.js",
-       "padding": 1
-     }
-   }
-   ```
+### From a local clone
 
-   > Replace `/home/you/` with your real home directory — `statusLine.command`
-   > does not expand `~`.
-   >
-   > The script is marked executable and carries a `#!/usr/bin/env node`
-   > shebang, so the bare path works. If your environment doesn't honor
-   > shebangs, prefix the interpreter explicitly, e.g.
-   > `"command": "node /home/you/.claude/statusline-context.js"`.
+```sh
+git clone https://github.com/petritol/claudecode-statusline-context
+claude --plugin-dir /path/to/claudecode-statusline-context
+```
 
-3. **Reload.** Start a new Claude Code session (or trigger a status-line
-   refresh) and the colorized bar appears.
+To load it in every session without the flag, add the folder to the `env`
+block of `~/.claude/settings.json`:
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_PLUGIN_DIRS": "/path/to/claudecode-statusline-context"
+  }
+}
+```
+
+### Upgrading from the status line script
+
+Earlier versions were a `statusLine` command script. Remove the `statusLine`
+block from `~/.claude/settings.json` and delete
+`~/.claude/statusline-context.js`, or the usage shows twice.
+
+## Development
+
+```sh
+claude plugin validate .
+claude plugin test .
+```
 
 ## License
 

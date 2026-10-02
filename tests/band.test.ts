@@ -1,0 +1,40 @@
+import { expect, test } from 'claude-code/testing'
+
+import { colorFor, statusLine } from '../hooks/register'
+
+test('should format the line and degrade with width', async () => {
+  const base = { model: 'Opus 5.5', project: 'Projects', tokens: 50_000, window: 1_000_000, percent: 5 }
+
+  expect(statusLine({ ...base, columns: 120 })).toBe(
+    'Opus 5.5 | Projects | ctx 5% [█░░░░░░░░░░░░░░░░░░░] 50k/1M',
+  )
+  expect(statusLine({ ...base, columns: 80 })).toBe('Opus 5.5 | Projects | ctx 5% [█░░░░░░░░░░░] 50k/1M')
+  expect(statusLine({ ...base, columns: 40 })).toBe('Opus 5.5 | Projects | ctx 5% 50k/1M')
+  expect(statusLine({ ...base, tokens: 250_000, percent: 25, columns: 40 })).toBe('Opus 5.5 | ctx 25% 250k/1M 200k+')
+})
+
+test('should run the gradient green to yellow to red', async () => {
+  expect(colorFor(0)).toBe('#00ff00')
+  expect(colorFor(150_000)).toBe('#ffff00')
+  expect(colorFor(175_000)).toBe('#ff8000')
+  expect(colorFor(500_000)).toBe('#ff0000')
+})
+
+test('should draw the band from the session usage', async ($, on) => {
+  on('session.usage', () => ({ value: { startedAt: 0, context: { tokens: 160_000, window: 1_000_000, percent: 16 }, rateLimits: [] } }))
+  on('session.model', () => ({ value: 'Opus 5.5' }))
+  on('session.root', () => ({ value: '/Users/me/Projects/app' }))
+
+  const ui = await $.ui.mount({
+    plugin: 'context-statusline',
+    surface: 'terminal',
+    component: 'AbovePrompt',
+    props: { hasSurvey: false, isWorking: false, maxRows: 10, bodyColumns: 120, scroll: { offset: 0, bodyRows: 9 }, view: {} },
+  })
+
+  expect(await ui.drawn()).toEqual({
+    type: 'Text',
+    props: { color: '#ffcc00', wrap: 'truncate' },
+    children: ['Opus 5.5 | app | ctx 16% [███░░░░░░░░░░░░░░░░░] 160k/1M'],
+  })
+})
