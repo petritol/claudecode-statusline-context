@@ -1,4 +1,4 @@
-# claudecode-statusline-context
+# context-statusline
 
 ![Sample status line states](docs/states.svg)
 
@@ -37,8 +37,8 @@ The band appears above the prompt and updates after each turn.
 ### From a local clone
 
 ```sh
-git clone https://github.com/petritol/claudecode-statusline-context
-claude --plugin-dir /path/to/claudecode-statusline-context
+git clone https://github.com/petritol/context-statusline
+claude --plugin-dir /path/to/context-statusline
 ```
 
 To load it in every session without the flag, add the folder to the `env`
@@ -47,7 +47,7 @@ block of `~/.claude/settings.json`:
 ```json
 {
   "env": {
-    "CLAUDE_CODE_PLUGIN_DIRS": "/path/to/claudecode-statusline-context"
+    "CLAUDE_CODE_PLUGIN_DIRS": "/path/to/context-statusline"
   }
 }
 ```
