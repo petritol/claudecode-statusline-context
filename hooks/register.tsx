@@ -43,6 +43,14 @@ export function colorFor(usedTokens: number): string {
   return `#${rgb.map(c => c.toString(16).padStart(2, '0')).join('')}`
 }
 
+export function modelDisplayName(id: string): string {
+  const match = /^claude-([a-z]+)-(\d+)(?:-(\d{1,2}))?(?:-\d{8})?(\[1m\])?$/i.exec(id)
+  if (!match) return id
+  const [, family, major, minor, longContext] = match
+  const name = `${family![0]!.toUpperCase()}${family!.slice(1)} ${major}${minor ? `.${minor}` : ''}`
+  return longContext ? `${name} (1M context)` : name
+}
+
 export function statusLine(args: {
   model: string
   project: string
@@ -83,7 +91,7 @@ export const register: Register = on => {
     ])
     const tokens = context.tokens ?? 0
     const line = statusLine({
-      model,
+      model: modelDisplayName(model),
       project: root.split(/[\\/]/).filter(Boolean).pop() ?? '',
       tokens,
       window: context.window,

@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
-import { colorFor, statusLine } from '../hooks/register'
+import { colorFor, modelDisplayName, statusLine } from '../hooks/register'
 
 test('should format the line and degrade with width', async () => {
   const base = { model: 'Opus 5.5', project: 'Projects', tokens: 50_000, window: 1_000_000, percent: 5 }
@@ -13,6 +13,14 @@ test('should format the line and degrade with width', async () => {
   expect(statusLine({ ...base, tokens: 250_000, percent: 25, columns: 40 })).toBe('Opus 5.5 | ctx 25% 250k/1M 200k+')
 })
 
+test('should turn model ids into display names', async () => {
+  expect(modelDisplayName('claude-opus-5-5')).toBe('Opus 5.5')
+  expect(modelDisplayName('claude-haiku-4-5-20251001')).toBe('Haiku 4.5')
+  expect(modelDisplayName('claude-opus-4-20250514')).toBe('Opus 4')
+  expect(modelDisplayName('claude-sonnet-5-5[1m]')).toBe('Sonnet 5.5 (1M context)')
+  expect(modelDisplayName('us.anthropic.claude-opus-5-5-v1:0')).toBe('us.anthropic.claude-opus-5-5-v1:0')
+})
+
 test('should run the gradient green to yellow to red', async () => {
   expect(colorFor(0)).toBe('#00ff00')
   expect(colorFor(150_000)).toBe('#ffff00')
@@ -22,7 +30,7 @@ test('should run the gradient green to yellow to red', async () => {
 
 test('should draw the band from the session usage', async ($, on) => {
   on('session.usage', () => ({ value: { startedAt: 0, context: { tokens: 160_000, window: 1_000_000, percent: 16 }, rateLimits: [] } }))
-  on('session.model', () => ({ value: 'Opus 5.5' }))
+  on('session.model', () => ({ value: 'claude-opus-5-5' }))
   on('session.root', () => ({ value: '/Users/me/Projects/app' }))
 
   const ui = await $.ui.mount({

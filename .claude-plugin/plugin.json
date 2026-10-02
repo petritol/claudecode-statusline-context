@@ -1,6 +1,6 @@
 {
   "name": "context-statusline",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Colorized context-window usage band: model | project | ctx % [bar] used/total",
   "author": { "name": "Petri Tolonen" },
   "types": "./types/index.d.ts"
